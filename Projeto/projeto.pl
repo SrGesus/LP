@@ -19,10 +19,21 @@ horario2(A,B,C,D,E,p2) :- horario(A,B,C,D,E,p1_2).
 horario2(A,B,C,D,E,p3) :- horario(A,B,C,D,E,p3_4).
 horario2(A,B,C,D,E,p4) :- horario(A,B,C,D,E,p3_4).
 
-% Eventos Sem Sala num Período.
+%% Eventos Sem Sala num Período.
+
+% eventoPeriodo é true se EventoID é um evento com horário no Periodo
 eventoPeriodo(Periodo, EventoID) :- horario2(EventoID,_,_,_,_,Periodo).
-eventoSemSalaPeriodo(Periodo, EventoID) :- eventoSemSala(EventoID), eventoPeriodo(Periodo, EventoID).
-eventoSemSalaListaPeriodo([Periodo | Resto], EventoID) :- eventoSemSalaPeriodo(Periodo, EventoID); eventoSemSalaListaPeriodo(Resto, EventoID).
+
+% eventoListaPeriodo é true se EventoID é um evento com horário num Periodo pertencente à lista Periodo
+eventoListaPeriodo(ListaPeriodo, EventoID) :-
+    member(Periodo, ListaPeriodo),
+    eventoPeriodo(Periodo, EventoID).
+
+% eventoSemSalaListaPeriodo é true se EventoID é um evento sem sala com horário num Periodo pertencente à lista Periodo
+eventoSemSalaListaPeriodo(ListaPeriodo, EventoID) :- 
+    eventoListaPeriodo(ListaPeriodo, EventoID),
+    eventoSemSala(EventoID).
+
 eventosSemSalasPeriodo(ListaPeriodo, ListaEventos) :- 
     setof(EventoID, eventoSemSalaListaPeriodo(ListaPeriodo, EventoID), ListaEventos).
 
@@ -47,22 +58,40 @@ procuraDisciplinas(Curso, ListaDisciplinas)
     :- setof(Disciplina, cursoDisciplina(Curso, Disciplina), ListaDisciplinas).
 
 % Organiza Disciplinas
-disciplinaSemestre1(Curso, Disciplina) :- evento(EventoID, Disciplina,_,_,_), turno(EventoID, Curso,_,_), (eventoPeriodo(p1, EventoID); eventoPeriodo(p2, EventoID)).
-disciplinaSemestre2(Curso, Disciplina) :- evento(EventoID, Disciplina,_,_,_), turno(EventoID, Curso,_,_), (eventoPeriodo(p3, EventoID); eventoPeriodo(p4, EventoID)).
+disciplinaSemestre1(Curso, Disciplina) :- 
+    evento(EventoID, Disciplina,_,_,_), turno(EventoID, Curso,_,_), (eventoPeriodo(p1, EventoID); eventoPeriodo(p2, EventoID)).
+disciplinaSemestre2(Curso, Disciplina) :- 
+    evento(EventoID, Disciplina,_,_,_), turno(EventoID, Curso,_,_), (eventoPeriodo(p3, EventoID); eventoPeriodo(p4, EventoID)).
 
+% Caso Terminal
 organizaDisciplinasAux([], _, [[],[]]).
+
 organizaDisciplinasAux([Disciplina| ListaDisciplinas], Curso, [[Disciplina| Semestre1], Semestre2]) :- 
     disciplinaSemestre1(Curso, Disciplina),
+    \+ disciplinaSemestre2(Curso, Disciplina),
     organizaDisciplinasAux(ListaDisciplinas, Curso, [Semestre1, Semestre2]).
+
 organizaDisciplinasAux([Disciplina| ListaDisciplinas], Curso, [Semestre1, [Disciplina| Semestre2]]) :- 
     disciplinaSemestre2(Curso, Disciplina),
+    \+ disciplinaSemestre1(Curso, Disciplina),
     organizaDisciplinasAux(ListaDisciplinas, Curso, [Semestre1, Semestre2]).
-organizaDisciplinas(ListaDisciplinas, Curso, SemestresSorted) :- organizaDisciplinasAux(ListaDisciplinas, Curso, Semestres), sort(Semestres, SemestresSorted).
+
+organizaDisciplinasAux([Disciplina| ListaDisciplinas], Curso, [[Disciplina| Semestre1], [Disciplina | Semestre2]]) :- 
+    disciplinaSemestre1(Curso, Disciplina),
+    disciplinaSemestre2(Curso, Disciplina),
+    organizaDisciplinasAux(ListaDisciplinas, Curso, [Semestre1, Semestre2]).
+
+ordenaLista([_]).
+ordenaLista([P1, P2 | R]) :- 
+    P1 @< P2,
+    ordenaLista([P2 | R]).
+
+organizaDisciplinas(ListaDisciplinas, Curso, [Semestre1, Semestre2]) :- organizaDisciplinasAux(ListaDisciplinas, Curso, [Semestre1, Semestre2]), !.
 
 % Hora Curso
 eventoCurso(EventoID, Curso, Ano) :- turno(EventoID, Curso, Ano, _).
 listaEventosCurso(Curso, Ano, ListaEventos) :- setof(EventoID, eventoCurso(EventoID, Curso, Ano), ListaEventos).
-% Se não encontrar duração, assumir com o0
+% Se não encontrar duração, assumir como 0 horas
 eventoDuracaoPeriodo(EventoID, Curso, Periodo, Ano, Duracao) :- 
     setof(Duracao1, (horario2(EventoID, _, _, _, Duracao1, Periodo)), [Duracao|_]);
     (eventoCurso(EventoID, Curso, Ano),
@@ -73,7 +102,7 @@ horasCursoAux([], _, _, _, 0).
 horasCursoAux([EventoID| Resto], Curso, Periodo, Ano, TotalHoras) :-
     horasCursoAux(Resto, Curso, Periodo, Ano, Soma),
     eventoDuracaoPeriodo(EventoID, Curso, Periodo, Ano, Duracao),
-    TotalHoras is Soma + Duracao, !.
+    TotalHoras is Soma + Duracao.
 
 
 horasCurso(Periodo, Curso, Ano, TotalHoras) :- listaEventosCurso(Curso, Ano, ListaEventos), horasCursoAux(ListaEventos, Curso, Periodo, Ano, TotalHoras).
@@ -89,3 +118,15 @@ evolucaoHorasCursoAux(Curso, Ano, Periodo, TotalHoras) :- Periodo = p3,
 evolucaoHorasCursoAux(Curso, Ano, Periodo, TotalHoras) :- Periodo = p4,
     horasCurso(p4, Curso, Ano, TotalHoras).
 evolucaoHorasCurso(Curso, Evolucao) :- setof((Ano, Periodo, TotalHoras), evolucaoHorasCursoAux(Curso, Ano, Periodo, TotalHoras), Evolucao).
+
+% ocupa Slot
+ocupaSlot(Inicio1, Fim1, Inicio2, Fim2, Overlap) :- 
+    InicioMaior is max(Inicio1, Inicio2),
+    FimMenor is min(Fim1, Fim2),
+    (FimMenor =< InicioMaior,
+    Overlap is 0;
+    FimMenor > InicioMaior,
+    Overlap is FimMenor-InicioMaior).
+
+% Horas Ocupadas
+% numHorasOcupadas(Periodo, TipoSala, DiaSemana, HoraInicio, HoraFim, SomaHoras) :-
