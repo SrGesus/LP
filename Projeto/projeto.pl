@@ -88,8 +88,7 @@ ordenadaLista([P1, P2 | R]) :-
     ordenadaLista([P2 | R]).
 
 organizaDisciplinas(ListaDisciplinas, Curso, [Semestre1, Semestre2]) :- 
-    organizaDisciplinasAux(ListaDisciplinas, Curso, [Semestre1, Semestre2]),
-    organizaDisciplinas(ListaDisciplinas, Curso, [Semestre1, Semestre2]).
+    organizaDisciplinasAux(ListaDisciplinas, Curso, [Semestre1, Semestre2]).
 
 % Hora Curso
 eventoCurso(EventoID, Curso, Ano) :- turno(EventoID, Curso, Ano, _).
