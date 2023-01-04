@@ -23,3 +23,14 @@ comp_maior_lista([P | R], C):-
     length(P,CurrLen),
     comp_maior_lista(R, PreviousMax),
     C is max(CurrLen, PreviousMax).
+
+
+escreve_n_vezesAux(0, _).
+escreve_n_vezesAux(N, Msg):-
+    N > 0,
+    N2 is N-1,
+    write(Msg),
+    escreve_n_vezesAux(N2, Msg).
+escreve_n_vezes(N, Msg):-
+    escreve_n_vezesAux(N, Msg),
+    nl.

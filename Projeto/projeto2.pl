@@ -7,11 +7,17 @@
     % eventosSemSalas %
     %%%%%%%%%%%%%%%%%%%
 
-% e verdade se EventoID e um evento semSala
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
+% eventoSemSala(EventoID)
+% EventoID e um evento singular semSala
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
 eventoSemSala(EventoID):- evento(EventoID, _, _, _, semSala).
 
-% e verdade se ListaEventos e uma lista, ordenada e
-% sem elementos repetidos, de IDs de eventos sem sala
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
+% eventosSemSalas(EventosSemSala)
+% EventosSemSala e uma lista, ordenada e
+% sem elementos repetidos, de IDs de eventos sem sala.
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
 eventosSemSalas(ListaEventosSorted):-
     findall(EventoID, eventoSemSala(EventoID), ListaEventos),
     sort(ListaEventos, ListaEventosSorted).
@@ -21,13 +27,18 @@ eventosSemSalas(ListaEventosSorted):-
     % eventosSemSalasDiaSemana %
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% e verdade se EventoID e um evento semSala com horario no dia da semana.
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
+% eventosSemSalasDiaSemanaAux(DiaSemana, EventoID)
+% EventoID e um evento semSala com horario no DiaSemana.
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
 eventosSemSalasDiaSemanaAux(DiaSemana, EventoID):-
     eventoSemSala(EventoID), horario(EventoID, DiaSemana, _, _, _, _).
 
-% e verdade se ListaEventos e uma lista, 
-% ordenada e sem elementos repetidos, de IDs de eventos sem sala,
-% que decorrem em DiaSemana.
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
+% eventosSemSalasDiaSemana(DiaSemana, EventosSemSala)
+% EventosSemSala e uma lista, ordenada e sem elementos repetidos, 
+% de IDs de eventos sem sala, com horario em DiaSemana.
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
 eventosSemSalasDiaSemana(DiaSemana, ListaEventosSorted):-
     findall(EventoID, eventosSemSalasDiaSemanaAux(DiaSemana, EventoID), ListaEventos),
     sort(ListaEventos, ListaEventosSorted).
@@ -37,28 +48,41 @@ eventosSemSalasDiaSemana(DiaSemana, ListaEventosSorted):-
     % eventosSemSalasPeriodo %
     %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% horarioPeriodos para p1 e p2 e verdade se horario para p1_2 e verdade
-% horarioPeriodos para p3 e p4 e verdade se horario para p3_4 e verdade
-horarioPeriodos(A,B,C,D,E,F):- horario(A,B,C,D,E,F).
-horarioPeriodos(A,B,C,D,E,p1):- horario(A,B,C,D,E,p1_2).
-horarioPeriodos(A,B,C,D,E,p2):- horario(A,B,C,D,E,p1_2).
-horarioPeriodos(A,B,C,D,E,p3):- horario(A,B,C,D,E,p3_4).
-horarioPeriodos(A,B,C,D,E,p4):- horario(A,B,C,D,E,p3_4).
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
+% horarioPeriodos(EventoID, DiaSemana, HoraInicio, HoraFim, 
+% Duracao, Periodo)
+% e verdade se horario para os mesmos argumentos tambem for
+% mas tambem para Periodo = p1 ou p2 se Periodo for p1_2
+% e para Periodo = p3 ou p4 se Periodo for p3_4
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
+horarioPeriodos(EventoID, DiaSemana, HoraInicio, HoraFim, Duracao, Periodo):- 
+    horario(EventoID, DiaSemana, HoraInicio, HoraFim, Duracao, PeriodoAux),
+    ((PeriodoAux = p1_2, (Periodo = p1; Periodo = p2));
+    (PeriodoAux = p3_4, (Periodo = p3; Periodo = p4));
+    PeriodoAux = Periodo).
 
-% eventoPeriodo e verdade se EventoID e um evento com horario no Periodo
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
+% eventoPeriodo(EventoID, Periodo) 
+% EventoID e um evento com horario em Periodo
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
 eventoPeriodo(EventoID, Periodo):-
     horarioPeriodos(EventoID, _, _, _, _, Periodo).
 
-% e verdade se EventoID e um evento sem sala 
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
+% eventosSemSalasPeriodoAux(ListaPeriodos, EventoID)
+% EventoID e um evento sem sala
 % com horario num Periodo em ListaPeriodos
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
 eventosSemSalasPeriodoAux(ListaPeriodos, EventoID):-
     member(Periodo, ListaPeriodos),
     eventoSemSala(EventoID),
     eventoPeriodo(EventoID, Periodo).
 
-% e verdade se ListaEventosSorted e uma lista dos eventos, 
-% ordenada e sem elementos repetidos, de IDs de eventos sem sala nos 
-% Periodos de ListaPeriodos.
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
+% eventosSemSalasPeriodo(ListaPeriodos, EventosSemSala)
+% EventosSemSala e uma lista, ordenada e sem elementos repetidos,
+% de IDs de eventos sem sala nos Periodos de ListaPeriodos.
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
 eventosSemSalasPeriodo(ListaPeriodos, ListaEventosSorted):-
     findall(EventoID, eventosSemSalasPeriodoAux(ListaPeriodos, EventoID), ListaEventos),
     sort(ListaEventos, ListaEventosSorted).
@@ -68,19 +92,28 @@ eventosSemSalasPeriodo(ListaPeriodos, ListaEventosSorted):-
     % organizaEventos %
     %%%%%%%%%%%%%%%%%%%
 
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
+% filtraEventosPeriodo(ListaEventos, Periodo, EventosNoPeriodo)
+% EventosNoPeriodo e uma lista dos EventoIDs pertencentes a
+% ListaEventos que decorrem em Periodo.
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
+
 % caso terminal
 filtraEventosPeriodo([], _, []).
 % caso EventoID decorra no Periodo
-filtraEventosPeriodo([EventoID | R], Periodo, [EventoID | ListaEventos]):-
+filtraEventosPeriodo([EventoID | ListaEventos], Periodo, [EventoID | EventosNoPeriodo]):-
     eventoPeriodo(EventoID, Periodo),
-    filtraEventosPeriodo(R, Periodo, ListaEventos).
+    filtraEventosPeriodo(ListaEventos, Periodo, EventosNoPeriodo).
 % caso EventoID nao decorra no Periodo
-filtraEventosPeriodo([EventoID | R], Periodo, ListaEventos):-
+filtraEventosPeriodo([EventoID | ListaEventos], Periodo, EventosNoPeriodo):-
     \+ eventoPeriodo(EventoID, Periodo),
-    filtraEventosPeriodo(R, Periodo, ListaEventos).
+    filtraEventosPeriodo(ListaEventos, Periodo, EventosNoPeriodo).
 
-% verdade se EventosNoPeriodoSorted e uma lista ordenada sem repeticao 
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
+% organizaEventos(ListaEventos, Periodo, EventosNoPeriodo)
+% EventosNoPeriodo e uma lista ordenada sem repeticao 
 % dos eventos da ListaEventos que ocorrem no Periodo
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
 organizaEventos(ListaEventos, Periodo, EventosNoPeriodoSorted):-
     filtraEventosPeriodo(ListaEventos, Periodo, EventosNoPeriodo),
     sort(EventosNoPeriodo, EventosNoPeriodoSorted).
@@ -90,17 +123,25 @@ organizaEventos(ListaEventos, Periodo, EventosNoPeriodoSorted):-
     % eventosMenoresQue %
     %%%%%%%%%%%%%%%%%%%%%
 
-% e verdade se Duracao e a Duracao do evento EventoID
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
+% eventoDuracao(Duracao, EventoID)
+% Duracao e a Duracao do evento horario do EventoID
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
 eventoDuracao(Duracao, EventoID):- horario(EventoID,_,_,_,Duracao,_).
 
-% e verdade se EventoID e um evento com duracao menor ou igual a Duracao
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
+% eventosMenoresQueBool(EventoID, Duracao)
+% EventoID e um evento com duracao menor ou igual a Duracao
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
 eventosMenoresQueBool(EventoID, Duracao):- 
     eventoDuracao(DuracaoEvento, EventoID), 
     DuracaoEvento =< Duracao.
 
-% e verdade se ListaEventosSorted e uma lista ordenada e sem 
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
+% ListaEventos e uma lista ordenada e sem 
 % elementos repetidos dos EventoIDs que teem uma duracao maior 
 % ou igual a Duracao
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
 eventosMenoresQue(Duracao, ListaEventosSorted):-
     findall(EventoID, eventosMenoresQueBool(EventoID, Duracao), ListaEventos),
     sort(ListaEventos, ListaEventosSorted).
@@ -110,13 +151,19 @@ eventosMenoresQue(Duracao, ListaEventosSorted):-
     % procuraDisciplinas %
     %%%%%%%%%%%%%%%%%%%%%%
 
-% e verdade se Disciplina tem um turno para Curso
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
+% disciplinaCurso(Disciplina, Curso)
+% Disciplina tem um turno para Curso
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
 disciplinaCurso(Disciplina, Curso):- 
     turno(EventoID, Curso, _, _),
     evento(EventoID, Disciplina, _, _, _).
 
-% e verdade se ListaDisciplinasSorted e a lista
-% ordenada alfabeticamente do nome das disciplinas do Curso
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
+% procuraDisciplinas(Curso, ListaDisciplinas)
+% ListaDisciplinasSorted e a lista ordenada alfabeticamente
+% do nome das disciplinas do Curso
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
 procuraDisciplinas(Curso, ListaDisciplinasSorted):-
     findall(Disciplina, disciplinaCurso(Disciplina, Curso), ListaDisciplinas),
     sort(ListaDisciplinas, ListaDisciplinasSorted).
@@ -126,7 +173,11 @@ procuraDisciplinas(Curso, ListaDisciplinasSorted):-
     % organizaDisciplinas %
     %%%%%%%%%%%%%%%%%%%%%%%
 
-% e verdade se Disciplina tem um turno no curso no respetivo semestre
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
+% disciplinaSemestre1(Curso, Disciplina) e
+% disciplinaSemestre2(Curso, Disciplina)
+% Disciplina tem um turno no Curso no respetivo semestre
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
 disciplinaSemestre1(Curso, Disciplina):- 
     evento(EventoID, Disciplina, _, _, _), 
     turno(EventoID, Curso, _, _), 
@@ -136,24 +187,32 @@ disciplinaSemestre2(Curso, Disciplina):-
     turno(EventoID, Curso, _, _),
     (eventoPeriodo(EventoID, p3); eventoPeriodo(EventoID, p4)).
 
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
+% organizaDisciplinasAux(ListaDisciplinas, Curso, Semestres)
+% predicado auxiliar - como organizaDisciplinas mas antes 
+% da ordenacao alfabetica. Itera os elementos de ListaDisciplinas
+% recursivamente e insere-os no respetivo semestre(s).
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
 % caso terminal
 organizaDisciplinasAux([], _, [[],[]]).
 % caso evento tenha Disciplina no Curso no semestre 1
 organizaDisciplinasAux([Disciplina| ListaDisciplinas], Curso, [[Disciplina| Semestre1], Semestre2]):- 
     disciplinaSemestre1(Curso, Disciplina),
-    % \+ disciplinaSemestre2(Curso, Disciplina),
     organizaDisciplinasAux(ListaDisciplinas, Curso, [Semestre1, Semestre2]).
 % caso evento tenha Disciplina no Curso no semestre 2
 organizaDisciplinasAux([Disciplina| ListaDisciplinas], Curso, [Semestre1, [Disciplina| Semestre2]]):- 
     disciplinaSemestre2(Curso, Disciplina),
     \+ disciplinaSemestre1(Curso, Disciplina),
     organizaDisciplinasAux(ListaDisciplinas, Curso, [Semestre1, Semestre2]).
-% caso evento tenha Disciplina no Curso no semestre 1 e 2
-% organizaDisciplinasAux([Disciplina| ListaDisciplinas], Curso, [[Disciplina| Semestre1], [Disciplina | Semestre2]]):- 
-%     disciplinaSemestre1(Curso, Disciplina),
-%     disciplinaSemestre2(Curso, Disciplina),
-%     organizaDisciplinasAux(ListaDisciplinas, Curso, [Semestre1, Semestre2]).
 
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
+% organizaDisciplinas(ListaDisciplinas, Curso, Semestres)
+% Recorre ao predicado auxiliar organizaDisciplinasAux 
+% Semestres e uma lista com duas listas ordenadas, a primeira sao os 
+% elementos de ListaDisciplinas que ocorrem no primeiro semestre, 
+% ou primeiro e segundo semestre, e na segunda lista os que ocorrem 
+% somente no segundo
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
 organizaDisciplinas(ListaDisciplinas, Curso, [Semestre1Sorted, Semestre2Sorted]):-
     organizaDisciplinasAux(ListaDisciplinas, Curso, [Semestre1, Semestre2]), !,
     sort(Semestre1, Semestre1Sorted),
@@ -166,7 +225,7 @@ organizaDisciplinas(ListaDisciplinas, Curso, [Semestre1Sorted, Semestre2Sorted])
 
 eventosCursoPeriodoAno(EventoID, Periodo, Curso, Ano) :-
     turno(EventoID, Curso, Ano, _),
-    horarioPeriodos(EventoID, _, _, _, _, Periodo).
+    eventoPeriodo(EventoID, Periodo).
 
 horasCursoAux([], 0).
 horasCursoAux([EventoID | ListaEventos], SomaHoras):-
@@ -186,7 +245,7 @@ horasCurso(Periodo, Curso, Ano, TotalHoras):-
     %%%%%%%%%%%%%%%%%%%%%%
 
 evolucaoHorasCursoAux(Curso, (Ano, Periodo, TotalHoras)):-
-    % ground the variables Curso, Ano e Periodo
+    % ground the variables Ano e Periodo
     turno(_, _, Ano, _),
     (Periodo = p1; Periodo = p2; Periodo = p3; Periodo = p4),
     horasCurso(Periodo, Curso, Ano, TotalHoras).
@@ -222,8 +281,8 @@ eventoPeriodoSalaDia(EventoID, Periodo, TipoSala, DiaSemana):-
 numHorasOcupadasAux([], _, _, 0).
 numHorasOcupadasAux([EventoID | ListaEventos], InicioLim, FimLim, TotalHoras):-
     horario(EventoID, _, Inicio, Fim, _, _),
-    (ocupaSlot(Inicio, Fim, InicioLim, FimLim, Overlap), !;
-    Overlap is 0),
+    (ocupaSlot(Inicio, Fim, InicioLim, FimLim, Overlap);
+    Overlap is 0, \+ ocupaSlot(Inicio, Fim, InicioLim, FimLim, _)),
     numHorasOcupadasAux(ListaEventos, InicioLim, FimLim, PrevHoras),
     TotalHoras is PrevHoras + Overlap.
 
@@ -265,7 +324,9 @@ ocupacaoCriticaAux(HoraInicio, HoraFim, Threshold, DiaSemana, TipoSala, RoundedP
     RoundedPercent is ceiling(Percentagem).
 
 ocupacaoCritica(HoraInicio, HoraFim, Threshold, ResultadosSorted):-
-    findall(casosCriticos(DiaSemana, TipoSala, Percentagem), ocupacaoCriticaAux(HoraInicio, HoraFim, Threshold, DiaSemana, TipoSala, Percentagem), Resultados),
+    findall(casosCriticos(DiaSemana, TipoSala, Percentagem), 
+        ocupacaoCriticaAux(HoraInicio, HoraFim, Threshold, DiaSemana, TipoSala, Percentagem), 
+        Resultados),
     sort(Resultados, ResultadosSorted).
 
     %%%%%%%%%%%%%%%%
@@ -285,31 +346,8 @@ aplicaRestricao(lado(Pessoa2, Pessoa1),  [[X1, X2, X3],[ _,  _],[X6, X7, X8]]):-
     (Pessoa1 = X2, (Pessoa2 = X1; Pessoa2 = X3));
     (Pessoa1 = X7, (Pessoa2 = X6; Pessoa2 = X8)).
 
-aplicaRestricao(naoLado(Pessoa1, Pessoa2), [[X1, X2, X3],[X4, X5],[X6, X7, X8]]):-
-    % se Pessoa 1 estiver na cabeceira, Pessoa 2 pode estar em qualquer outro lugar
-    (Pessoa1 = X4, 
-        (Pessoa2 = X1; Pessoa2 = X2; Pessoa2 = X3; 
-        Pessoa2 = X5; Pessoa2 = X6; Pessoa2 = X7; Pessoa2 = X8));
-    (Pessoa1 = X5, 
-        (Pessoa2 = X1; Pessoa2 = X2; Pessoa2 = X3; 
-        Pessoa2 = X4; Pessoa2 = X6; Pessoa2 = X7; Pessoa2 = X8));
-    % se estiver num lado, Pessoa2 pode estar no outro
-    ((Pessoa1 = X1; Pessoa1 = X2; Pessoa1 = X3), (Pessoa2 = X6; Pessoa2 = X7; Pessoa2 = X8));
-    % se estiver na ponta de uma lado, Pessoa2 pode estar na outra
-    (Pessoa1 = X1, Pessoa2 = X3);
-    (Pessoa1 = X6, Pessoa2 = X8).
-
-% o mesmo trocando Pessoa1 e 2
-aplicaRestricao(naoLado(Pessoa2, Pessoa1), [[X1, X2, X3],[X4, X5],[X6, X7, X8]]):-
-    (Pessoa1 = X4, 
-        (Pessoa2 = X1; Pessoa2 = X2; Pessoa2 = X3; 
-        Pessoa2 = X5; Pessoa2 = X6; Pessoa2 = X7; Pessoa2 = X8));
-    (Pessoa1 = X5, 
-        (Pessoa2 = X1; Pessoa2 = X2; Pessoa2 = X3; 
-        Pessoa2 = X4; Pessoa2 = X6; Pessoa2 = X7; Pessoa2 = X8));
-    ((Pessoa1 = X1; Pessoa1 = X2; Pessoa1 = X3), (Pessoa2 = X6; Pessoa2 = X7; Pessoa2 = X8));
-    (Pessoa1 = X1, Pessoa2 = X3);
-    (Pessoa1 = X6, Pessoa2 = X8).
+aplicaRestricao(naoLado(Pessoa1, Pessoa2), Mesa):-
+    \+ aplicaRestricao(lado(Pessoa1, Pessoa2), Mesa).
 
 aplicaRestricao(frente(X1, X6), [[X1,  _,  _],[ _,  _],[X6,  _,  _]]).
 aplicaRestricao(frente(X2, X7), [[ _, X2,  _],[ _,  _],[ _, X7,  _]]).
@@ -318,41 +356,31 @@ aplicaRestricao(frente(X6, X1), [[X1,  _,  _],[ _,  _],[X6,  _,  _]]).
 aplicaRestricao(frente(X7, X2), [[ _, X2,  _],[ _,  _],[ _, X7,  _]]).
 aplicaRestricao(frente(X8, X3), [[ _,  _, X3],[ _,  _],[ _,  _, X8]]).
 
-aplicaRestricao(naoFrente(Pessoa1, Pessoa2), [[X1, X2, X3],[X4, X5],[X6, X7, X8]]):-
-    (Pessoa1 = X4; Pessoa1 = X5);
-    % se estiver no mesmo lado nao esta a frente
-    ((Pessoa1 = X1; Pessoa1 = X2; Pessoa1 = X3),
-     (Pessoa2 = X1; Pessoa2 = X2; Pessoa2 = X3));
-    ((Pessoa1 = X6; Pessoa1 = X7; Pessoa1 = X8),
-      (Pessoa2 = X6; Pessoa2 = X7; Pessoa2 = X8));
-    (Pessoa1 = X1, (Pessoa2 = X7; Pessoa2 = X8));
-    (Pessoa1 = X2, (Pessoa2 = X6; Pessoa2 = X8));
-    (Pessoa1 = X3, (Pessoa2 = X6; Pessoa2 = X7)).
-
-aplicaRestricao(naoFrente(Pessoa2, Pessoa1), [[X1, X2, X3],[X4, X5],[X6, X7, X8]]):-
-    (Pessoa1 = X4; Pessoa1 = X5);
-    (Pessoa1 = X1, (Pessoa2 = X7; Pessoa2 = X8));
-    (Pessoa1 = X2, (Pessoa2 = X6; Pessoa2 = X8));
-    (Pessoa1 = X3, (Pessoa2 = X6; Pessoa2 = X7)).
+aplicaRestricao(naoFrente(Pessoa1, Pessoa2), Mesa):-
+    \+ aplicaRestricao(frente(Pessoa1, Pessoa2), Mesa).
 
 ocupacaoMesaAux(_, [], _).
 ocupacaoMesaAux(ListaPessoas, [Regra | Resto], OcupacaoMesa):-
     aplicaRestricao(Regra, OcupacaoMesa),
     ocupacaoMesaAux(ListaPessoas, Resto, OcupacaoMesa).
 
-pessoasEmFalta([], _).
-pessoasEmFalta([Pessoa|Resto], Mesa):-
-    member(Pessoa, Mesa),
-    pessoasEmFalta(Resto, Mesa).
+membroLista(Lista, El):- member(El, Lista).
 
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
+% ocupacaoValida(ListaPessoas, Mesa)
+% Mesa e uma lista de listas [[X1, X2, X3],[X4, X5],[X6, X7, X8]]
+% tal que todos os X sao diferentes e membros de ListaPessoas
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
 ocupacaoValida(ListaPessoas, [[X1, X2, X3],[X4, X5],[X6, X7, X8]]):-
-    sort([X1, X2, X3, X4, X5, X6, X7, X8], ListaSemRepetidos),
-    length(ListaSemRepetidos, LenSemRepetidos),
-    length([X1, X2, X3, X4, X5, X6, X7, X8], LenNormal),
-    LenSemRepetidos = LenNormal,
-    pessoasEmFalta(ListaPessoas, [X1, X2, X3, X4, X5, X6, X7, X8]).
+    maplist(membroLista(ListaPessoas), [X1, X2, X3, X4, X5, X6, X7, X8]),
+    % is_set e verdade se a lista nao tem duplicados
+    is_set([X1, X2, X3, X4, X5, X6, X7, X8]).
 
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
+% ocupacaoMesa(ListaPessoas, ListaRegras, OcupacaoMesa)
+% OcupacaoMes
+% - + - - - + - - - + - - - + - - - + - - - + - - - + - - - + - %
 ocupacaoMesa(ListaPessoas, [Regra | Resto], OcupacaoMesa):-
+    ocupacaoValida(ListaPessoas, OcupacaoMesa),
     aplicaRestricao(Regra, OcupacaoMesa),
-    ocupacaoMesaAux(ListaPessoas, Resto, OcupacaoMesa),
-    ocupacaoValida(ListaPessoas, OcupacaoMesa).
+    ocupacaoMesaAux(ListaPessoas, Resto, OcupacaoMesa).
