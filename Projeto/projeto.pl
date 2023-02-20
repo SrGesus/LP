@@ -1,4 +1,3 @@
-% ist1107030 Gabriel Ferreira
 :- set_prolog_flag(answer_write_options,[max_depth(0)]). % para listas completas
 :- ['dados.pl'], ['keywords.pl']. % ficheiros a importar.
 
